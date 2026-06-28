@@ -25,7 +25,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: frenck/action-addon-linter@v2
         with:
-          path: "."
+          path: "./wardrowbe"
 
   lint-yaml:
     name: yamllint
@@ -41,7 +41,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: hadolint/hadolint-action@v3.3.0
         with:
-          dockerfile: Dockerfile
+          dockerfile: wardrowbe/Dockerfile
           failure-threshold: warning
 
   lint-shell:
@@ -53,8 +53,9 @@ jobs:
         id: collect
         run: |
           set -euo pipefail
-          mapfile -t FILES < <(find rootfs \
-            -type f \( -name '*.sh' -o -name 'run' -o -name 'finish' \) 2>/dev/null || true)
+          mapfile -t FILES < <(find wardrowbe/rootfs \
+            -type f \( -name '*.sh' -o -name 'run' -o -name 'finish' \) \
+            2>/dev/null || true)
           if [ "${#FILES[@]}" -eq 0 ]; then
             echo "found=false" >> "$GITHUB_OUTPUT"
           else
@@ -77,11 +78,11 @@ jobs:
       - name: Check for Unicode whitespace
         run: |
           set -euo pipefail
-          FOUND=$(find . -type f \( \
+          FOUND=$(find wardrowbe -type f \( \
             -name '*.yaml' -o -name '*.yml' -o \
             -name '*.py'   -o -name '*.sh'  -o \
             -name 'run'    -o -name 'finish' \
-          \) -not -path './.git/*' -print0 \
+          \) -print0 \
             | xargs -0 --no-run-if-empty grep -Pln \
               '[\x{a0}\x{2002}-\x{200b}\x{202f}\x{205f}\x{3000}]' \
               2>/dev/null || true)
@@ -100,14 +101,12 @@ jobs:
       - uses: DavidAnson/markdownlint-cli2-action@v23
         with:
           globs: |
-            **/*.md
-            !CHANGELOG.md
-            !AGENTS.md
-            !.agents/**
+            README.md
+            wardrowbe/DOCS.md
+            wardrowbe/README.md
 
   build-test:
     name: build test (${{ matrix.arch }})
-    # Skip docs-only changes and release-please PRs.
     if: >-
       !startsWith(github.head_ref, 'release-please--') &&
       github.ref != 'refs/heads/main'
@@ -128,7 +127,7 @@ jobs:
       - uses: docker/setup-buildx-action@v4
       - uses: docker/build-push-action@v7
         with:
-          context: .
+          context: wardrowbe
           platforms: ${{ matrix.platform }}
           push: false
           provenance: false

@@ -73,6 +73,7 @@ jobs:
         with:
           arch: ${{ matrix.arch }}
           image: ${{ matrix.image }}
+          context: wardrowbe
           image-tags: |
             ${{ needs.version.outputs.version }}
             latest
