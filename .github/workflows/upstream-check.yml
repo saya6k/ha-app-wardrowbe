@@ -1,0 +1,46 @@
+---
+name: Upstream check
+
+# yamllint disable-line rule:truthy
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check:
+    name: Check Anyesh/wardrowbe
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check for new release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          LATEST=$(gh release list --repo Anyesh/wardrowbe --limit 20 --json tagName \
+            --jq '[.[].tagName | select(startswith("wardrowbe-v"))][0]')
+          CURRENT=$(grep '^ARG WARDROWBE_VERSION=' wardrowbe/Dockerfile | cut -d= -f2)
+          echo "Latest : $LATEST"
+          echo "Current: $CURRENT"
+          [ "$LATEST" = "$CURRENT" ] && echo "Up to date." && exit 0
+          gh pr list --head "upstream/${LATEST}" --json number --jq 'length' \
+            | grep -qv '^0$' && echo "PR already open." && exit 0
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git switch -c "upstream/${LATEST}"
+          sed -i "s|^ARG WARDROWBE_VERSION=.*|ARG WARDROWBE_VERSION=${LATEST}|" wardrowbe/Dockerfile
+          git add wardrowbe/Dockerfile
+          git commit -m "chore: bump wardrowbe to ${LATEST}"
+          git push origin "upstream/${LATEST}"
+          gh pr create \
+            --base main --head "upstream/${LATEST}" \
+            --title "chore: bump wardrowbe to ${LATEST}" \
+            --body "$(printf '## Upstream update\n\n[Anyesh/wardrowbe %s](https://github.com/Anyesh/wardrowbe/releases/tag/%s) released.' "${LATEST}" "${LATEST}")" \
+            --assignee saya6k
