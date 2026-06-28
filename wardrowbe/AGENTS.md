@@ -23,7 +23,7 @@ tool access.
 Standalone repo — source, CI, and releases live here.
 `ha-apps` (the catalog repo) references the published GHCR image via `image:`.
 
-Published images: `ghcr.io/saya6k/{arch}-app-wardrowbe:{version}`
+Published image: `ghcr.io/saya6k/app-wardrowbe:{version}` (multi-arch manifest: `amd64` + `aarch64`)
 
 ## Layout
 
@@ -38,9 +38,9 @@ translations/{en,ko}.yaml                 option UI strings
 CHANGELOG.md / DOCS.md / README.md        user-facing docs
 ```
 
-CI: `.github/workflows/ci.yml` (lint + build test on PR/dev push)
-Build: `.github/workflows/build.yml` (build+push to GHCR on `v*` tag)
-Release: `.github/workflows/release.yml` (release-please → tag → triggers build)
+CI: `.github/workflows/ci.yml` (lint + build test on PR/push to dev)
+Build: `.github/workflows/build.yml` (build+push to GHCR on published release; notifies ha-apps via `repository_dispatch`)
+Release: `.github/workflows/release-drafter.yml` (drafts next patch; publish the draft to trigger build)
 
 ## Documentation layout
 
