@@ -99,7 +99,6 @@ jobs:
             --metadata-file "${metadata}" \
             --tag "${{ env.IMAGE }}:${VERSION}" \
             --tag "${{ env.IMAGE }}:latest" \
-            --tag "${{ env.IMAGE }}:dev" \
             "${{ env.IMAGE }}:amd64-${VERSION}" \
             "${{ env.IMAGE }}:aarch64-${VERSION}"
 
