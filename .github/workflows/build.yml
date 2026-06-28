@@ -29,10 +29,11 @@ jobs:
         id: version
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "version=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+            ver="${{ inputs.version }}"
           else
-            echo "version=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
+            ver="${{ github.event.release.tag_name }}"
           fi
+          echo "version=${ver#v}" >> "$GITHUB_OUTPUT"
 
   build:
     name: Build ${{ matrix.arch }}
