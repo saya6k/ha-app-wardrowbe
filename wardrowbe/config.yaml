@@ -59,6 +59,9 @@ schema:
   ai_api_key: str?
   ai_vision_model: str
   ai_text_model: str
+  ai_internal_enabled: bool?
+  ai_vision_enabled: bool?
+  ai_text_enabled: bool?
   oidc_issuer_url: str?
   oidc_client_id: str?
   oidc_client_secret: str?

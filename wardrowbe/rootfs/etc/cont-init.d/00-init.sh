@@ -139,6 +139,28 @@ set_env AI_API_KEY         "$(bashio::config 'ai_api_key')"
 set_env AI_VISION_MODEL    "$(bashio::config 'ai_vision_model')"
 set_env AI_TEXT_MODEL       "$(bashio::config 'ai_text_model')"
 
+# Internal-AI capability switches (wardrowbe v1.4.0). Hidden options — not in
+# config.yaml `options:`, so they default to true (current behavior). Set via
+# the YAML editor to defer AI work to an external agent (e.g. mcp-wardrowbe).
+#   ai_internal_enabled  master switch
+#   ai_vision_enabled / ai_text_enabled  sub-switches (require the master ON)
+# When the master is off, wardrowbe forces both sub-switches off regardless of
+# their value — so warn if a sub-switch is left on, since it has no effect.
+AI_INTERNAL_ENABLED="$(bashio::config 'ai_internal_enabled' 'true')"
+AI_VISION_ENABLED="$(bashio::config 'ai_vision_enabled' 'true')"
+AI_TEXT_ENABLED="$(bashio::config 'ai_text_enabled' 'true')"
+
+if [ "$AI_INTERNAL_ENABLED" = "false" ]; then
+  [ "$AI_VISION_ENABLED" = "true" ] && bashio::log.warning \
+    "ai_internal_enabled is OFF → ai_vision_enabled is ignored (internal vision AI stays disabled)."
+  [ "$AI_TEXT_ENABLED" = "true" ] && bashio::log.warning \
+    "ai_internal_enabled is OFF → ai_text_enabled is ignored (internal text AI stays disabled)."
+fi
+
+set_env AI_INTERNAL_ENABLED "$AI_INTERNAL_ENABLED"
+set_env AI_VISION_ENABLED    "$AI_VISION_ENABLED"
+set_env AI_TEXT_ENABLED      "$AI_TEXT_ENABLED"
+
 # Notifications (optional) ------------------------------------------------
 set_env NTFY_SERVER            "$(bashio::config 'ntfy_server')"
 set_env NTFY_TOKEN             "$(bashio::config 'ntfy_token')"
