@@ -119,11 +119,11 @@ set_env NEXTAUTH_SECRET    "$NEXTAUTH_SECRET"
 
 if [ "$DEV_LOGIN_OPT" = "true" ]; then
   set_env DEBUG            "true"
-  set_env DEV_LOGIN        "true"
+  set_env DEV_MODE         "true"
   bashio::log.info "Auth mode: Dev Login (any email/name accepted)"
 else
   set_env DEBUG            "false"
-  set_env DEV_LOGIN        "false"
+  set_env DEV_MODE         "false"
   bashio::log.info "Auth mode: OIDC (production)"
 fi
 
