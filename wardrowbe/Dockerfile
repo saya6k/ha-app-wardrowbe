@@ -26,18 +26,17 @@ RUN npm ci --ignore-scripts
 
 COPY --from=source /src/frontend ./
 
-# Enable dev-credentials login outside NODE_ENV=development so that the
-# add-on works out-of-the-box without an external OIDC provider.
-RUN sed -i \
-  "s|process\.env\.NODE_ENV === 'development'|process.env.NODE_ENV === 'development' \|\| process.env.DEV_LOGIN === 'true'|" \
-  lib/auth.ts
+# Dev-credentials login: wardrowbe v1.4.0+ gates DevCredentialsProvider on its
+# own DEV_MODE env var (lib/auth.ts), so we set DEV_MODE=true at runtime
+# instead of patching the source. See rootfs 00-init.sh / frontend/run.
 
 # Disable Next.js built-in compression (nginx handles this)
-# Disable Next.js Image Optimization — images are served directly from backend
-# This avoids all remotePatterns/rewrites issues with the /_next/image proxy
 # Disable font optimization — next/font/google fetches from googleapis at build
 # time; QEMU-emulated arm64 CI runners have no external network access.
-RUN sed -i "s|output: 'standalone'|output: 'standalone', compress: false, images: { unoptimized: true }, optimizeFonts: false|" next.config.js
+# Image Optimization: wardrowbe v1.4.0+ already sets images.unoptimized: true
+# (backend serves images directly; nginx must not proxy /_next/image), so we no
+# longer inject it here — the weekly upstream-check guards against regressions.
+RUN sed -i "s|output: 'standalone'|output: 'standalone', compress: false, optimizeFonts: false|" next.config.js
 
 ENV NEXT_TELEMETRY_DISABLED=1
 # Set backend URL at build time — rewrites() bakes this into standalone output

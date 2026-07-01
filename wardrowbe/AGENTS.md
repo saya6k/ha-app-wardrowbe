@@ -101,4 +101,4 @@ Each line: **don't X → do Y** — see notes for the reasoning.
 - **`chmod +x` for s6 files goes in the Dockerfile `find … -exec` block** — survives rootfs `COPY` on hosts that strip exec bits. — `.agents/architecture-non-goals.md`
 - **`arch:` stays `amd64` + `aarch64`** — sharp/asyncpg/Next.js standalone wheels not validated elsewhere. — `.agents/architecture-non-goals.md`
 - **Pin every version explicitly**, document bumps in CHANGELOG; never `@latest`. — `.agents/architecture-non-goals.md`
-- **Keep `images.unoptimized: true` in the Next.js patch** — backend serves images directly; nginx must not proxy `/_next/image`. — `.agents/architecture-non-goals.md`
+- **`images.unoptimized: true` comes from upstream** (v1.4.0+ sets it in `next.config.js`); we no longer inject it. Backend serves images directly; nginx must not proxy `/_next/image`. If upstream drops it, re-add to the Next.js patch. — `.agents/architecture-non-goals.md`
