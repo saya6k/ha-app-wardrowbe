@@ -1,6 +1,8 @@
-.agents/memory/
-# Claude Code local files (set up symlinks manually)
+# Agent scaffolding (AGENTS.md, .agents/, .claude/, CLAUDE.md symlinks) is
+# local-only and never tracked — see saya6k/hacs-wardrowbe for the same
+# convention.
+AGENTS.md
 CLAUDE.md
-.claude/settings.local.json
-.claude/scheduled_tasks.lock
+.agents/
+.claude/
 .DS_Store
