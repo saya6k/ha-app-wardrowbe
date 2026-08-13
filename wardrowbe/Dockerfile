@@ -75,6 +75,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Image metadata — migrated from the deprecated build.yaml `labels:` block.
 LABEL \
+    io.hass.type="app" \
     org.opencontainers.image.title="Home Assistant Add-on: Wardrowbe" \
     org.opencontainers.image.description="Self-hosted AI-powered wardrobe management" \
     org.opencontainers.image.source="https://github.com/Anyesh/wardrowbe" \
