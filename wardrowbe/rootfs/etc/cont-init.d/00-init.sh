@@ -139,6 +139,14 @@ set_env AI_API_KEY         "$(bashio::config 'ai_api_key')"
 set_env AI_VISION_MODEL    "$(bashio::config 'ai_vision_model')"
 set_env AI_TEXT_MODEL       "$(bashio::config 'ai_text_model')"
 
+# Worker tuning (wardrowbe v1.8.0). ai_tagging_concurrency bounds total arq
+# worker concurrency — tagging jobs and the light cron jobs share one pool, so
+# in practice it caps concurrent AI calls. Upstream default is 5; a single
+# local Ollama is usually happier at 2–3. ai_retry_cooldown_seconds is the
+# minimum wait before a failed item may be re-analysed manually.
+set_env AI_TAGGING_CONCURRENCY    "$(bashio::config 'ai_tagging_concurrency')"
+set_env AI_RETRY_COOLDOWN_SECONDS "$(bashio::config 'ai_retry_cooldown_seconds')"
+
 # Internal-AI capability switches (wardrowbe v1.4.0). Hidden options — not in
 # config.yaml `options:`, so they default to true (current behavior). Set via
 # the YAML editor to defer AI work to an external agent (e.g. mcp-wardrowbe).
