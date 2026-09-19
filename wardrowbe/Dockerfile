@@ -155,4 +155,4 @@ WORKDIR /
 # the replacement for the removed (deprecated) `watchdog:` config option. The
 # backend health endpoint is served through nginx on the web port 8099.
 HEALTHCHECK --start-period=3m --interval=30s --timeout=10s --retries=3 \
-    CMD curl -fsS http://127.0.0.1:8099/api/v1/health || exit 1
+    CMD ["curl", "-fsS", "http://127.0.0.1:8099/api/v1/health"]
