@@ -2,7 +2,7 @@
 # the multi-arch HA base manifest, pinned to an Alpine version tag (3.23 →
 # Node 24.14.1) instead of the moving :latest. Overridable with --build-arg.
 ARG BUILD_FROM=ghcr.io/home-assistant/base:3.23
-ARG WARDROWBE_VERSION=wardrowbe-v1.8.0
+ARG WARDROWBE_VERSION=wardrowbe-v1.10.0
 
 # =========================================================================
 # Stage 0 — Clone source from GitHub release tag
@@ -155,4 +155,4 @@ WORKDIR /
 # the replacement for the removed (deprecated) `watchdog:` config option. The
 # backend health endpoint is served through nginx on the web port 8099.
 HEALTHCHECK --start-period=3m --interval=30s --timeout=10s --retries=3 \
-    CMD curl -fsS http://127.0.0.1:8099/api/v1/health || exit 1
+    CMD ["curl", "-fsS", "http://127.0.0.1:8099/api/v1/health"]
