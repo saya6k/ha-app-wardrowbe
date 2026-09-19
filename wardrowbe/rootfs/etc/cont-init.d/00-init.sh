@@ -328,8 +328,10 @@ work_mem       = 4MB
 random_page_cost        = 4.0
 effective_io_concurrency = 0
 
-# Connections: wardrowbe backend + worker only
-max_connections = 10
+# Connections: backend + tagging worker + image worker each allow
+# pool_size=5 + max_overflow=10. Budget 45 app connections, 3 superuser
+# reserved slots, and 2 spare slots for backups / transient connections.
+max_connections = 50
 
 # Autovacuum: gentler write bursts on flash storage
 autovacuum_vacuum_cost_delay = 20ms
