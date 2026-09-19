@@ -139,7 +139,7 @@ jobs:
 
       - name: Check PostgreSQL connection capacity
         run: |
-          docker run --rm --network none \
+          docker run --rm --network none --user postgres \
             -v "$PWD/tests:/tests:ro" \
             --entrypoint /opt/venv/bin/python3 \
             wardrowbe:ci /tests/postgres_connections.py

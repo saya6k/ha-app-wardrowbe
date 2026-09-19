@@ -2,7 +2,6 @@
 
 import ast
 import asyncio
-import os
 from pathlib import Path
 import re
 import subprocess
@@ -59,27 +58,28 @@ async def check_connections(capacity, expect_exhaustion):
 
 
 def run_cluster(config, capacity, expect_exhaustion):
-    env = dict(os.environ, LD_PRELOAD="/usr/local/lib/libfakeeuid.so")
+    # CI runs this isolated database as the real postgres OS user. The HA
+    # production root shim is unnecessary for this connection-capacity test.
     with tempfile.TemporaryDirectory(prefix="wardrowbe-pg-test-") as directory:
         root = Path(directory)
         data = root / "data"
         subprocess.run([
             "initdb", "-D", str(data), "-U", "postgres", "--auth=trust",
             "--encoding=UTF-8", "--locale=C",
-        ], env=env, check=True, stdout=subprocess.DEVNULL)
+        ], check=True, stdout=subprocess.DEVNULL)
         (data / "wardrowbe.conf").write_text(config)
         with (data / "postgresql.conf").open("a") as file:
             file.write("\ninclude = 'wardrowbe.conf'\n")
         subprocess.run([
             "pg_ctl", "-D", str(data), "-l", str(root / "postgres.log"),
             "-o", f"-h 127.0.0.1 -k {directory}", "-w", "start",
-        ], env=env, check=True)
+        ], check=True)
         try:
             asyncio.run(check_connections(capacity, expect_exhaustion))
         finally:
             subprocess.run([
                 "pg_ctl", "-D", str(data), "-m", "immediate", "-w", "stop",
-            ], env=env, check=True)
+            ], check=True)
 
 
 if __name__ == "__main__":
