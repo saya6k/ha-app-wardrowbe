@@ -130,10 +130,19 @@ jobs:
           context: wardrowbe
           platforms: ${{ matrix.platform }}
           push: false
+          load: true
+          tags: wardrowbe:ci
           provenance: false
           sbom: false
           cache-from: type=gha,scope=${{ matrix.arch }}
           cache-to: type=gha,mode=min,scope=${{ matrix.arch }}
+
+      - name: Check PostgreSQL connection capacity
+        run: |
+          docker run --rm --network none \
+            -v "$PWD/tests:/tests:ro" \
+            --entrypoint /opt/venv/bin/python3 \
+            wardrowbe:ci /tests/postgres_connections.py
 
   ci-ok:
     name: CI passed
