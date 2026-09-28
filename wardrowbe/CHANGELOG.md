@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Update upstream Wardrowbe from v1.10.0 to v1.10.1 to handle AI provider
+  errors returned with HTTP 200 and retry unsupported parameters correctly.
+
 - Fix PostgreSQL connection exhaustion after login by increasing the managed
   connection limit from 10 to 50 for the backend and both worker pools.
   Existing installations receive the updated setting on app restart.
