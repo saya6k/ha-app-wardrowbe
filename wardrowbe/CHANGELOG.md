@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.3.6
+
+- Treat `ai_api_key`, `oidc_client_secret`, and `ntfy_token` as password
+  fields, so Home Assistant masks them in the UI. Existing values carry
+  over unchanged.
+
 ## 4.3.5
 
 - Update upstream Wardrowbe from v1.10.2 to v1.11.0, including forward
