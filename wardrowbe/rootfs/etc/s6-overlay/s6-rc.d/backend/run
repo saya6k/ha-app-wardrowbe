@@ -11,17 +11,57 @@ for _ in $(seq 1 60); do
   sleep 1
 done
 
+# ── Rename legacy role + database (one-time) ──────────────────────────────
+# ≤ 4.3.x took user/db names from options (default "wardrobe"); they are now
+# fixed. The cluster holds only this app's database, so the single
+# non-system one is the legacy database, whatever it was called. Renaming
+# it and its owner keeps ownership of every object, so no data moves.
+psql -U postgres -p "${POSTGRES_PORT}" -v ON_ERROR_STOP=1 <<SQL
+DO \$\$
+DECLARE
+  legacy_db   name;
+  legacy_role name;
+  candidates  int;
+BEGIN
+  IF EXISTS (SELECT FROM pg_database WHERE datname = '${POSTGRES_DB}') THEN
+    RETURN;
+  END IF;
+  SELECT count(*), min(d.datname), min(r.rolname)
+    INTO candidates, legacy_db, legacy_role
+    FROM pg_database d JOIN pg_roles r ON r.oid = d.datdba
+   WHERE NOT d.datistemplate AND d.datname <> 'postgres';
+  IF candidates = 0 THEN
+    RETURN;
+  ELSIF candidates > 1 THEN
+    RAISE WARNING 'several legacy databases found; not migrating any';
+    RETURN;
+  END IF;
+
+  RAISE NOTICE 'migrating database % (owner %) to ${POSTGRES_DB}', legacy_db, legacy_role;
+  IF legacy_role <> 'postgres'
+     AND NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '${POSTGRES_USER}') THEN
+    EXECUTE format('ALTER ROLE %I RENAME TO ${POSTGRES_USER}', legacy_role);
+  END IF;
+  PERFORM pg_terminate_backend(pid, 5000)
+     FROM pg_stat_activity WHERE datname = legacy_db;
+  EXECUTE format('ALTER DATABASE %I RENAME TO ${POSTGRES_DB}', legacy_db);
+END
+\$\$;
+SQL
+
 # ── Create role + database (idempotent) ───────────────────────────────────
 # CREATE ROLE does not support IF NOT EXISTS, so we check in PL/pgSQL.
+# The password is reset every start (a role rename also clears it).
 echo "[backend] ensuring database and role exist …"
 psql -U postgres -p "${POSTGRES_PORT}" <<SQL
 DO \$\$
 BEGIN
   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '${POSTGRES_USER}') THEN
-    CREATE ROLE ${POSTGRES_USER} WITH LOGIN PASSWORD '${POSTGRES_PASSWORD}';
+    CREATE ROLE ${POSTGRES_USER} WITH LOGIN;
   END IF;
 END
 \$\$;
+ALTER ROLE ${POSTGRES_USER} WITH LOGIN PASSWORD '${POSTGRES_PASSWORD}';
 SQL
 
 psql -U postgres -p "${POSTGRES_PORT}" <<SQL

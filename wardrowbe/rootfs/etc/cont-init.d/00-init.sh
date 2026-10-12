@@ -28,9 +28,10 @@ set_env() {
 # ══════════════════════════════════════════════════════════════════════════
 
 # ── 1. Read options from HA config and expose as env vars ─────────────────
-PG_USER="$(bashio::config  'postgres_user')"
-PG_PASS="$(bashio::config  'postgres_password')"
-PG_DB="$(bashio::config    'postgres_db')"
+# PostgreSQL credentials are fixed: loopback-only, internal to the add-on.
+PG_USER=wardrowbe
+PG_PASS=wardrowbe
+PG_DB=wardrowbe
 PG_PORT=5432
 REDIS_PORT=6379
 BACKEND_PORT=8000
@@ -172,7 +173,6 @@ set_env AI_TEXT_ENABLED      "$AI_TEXT_ENABLED"
 # Notifications (optional) ------------------------------------------------
 set_env NTFY_SERVER            "$(bashio::config 'ntfy_server')"
 set_env NTFY_TOKEN             "$(bashio::config 'ntfy_token')"
-set_env MATTERMOST_WEBHOOK_URL "$(bashio::config 'mattermost_webhook_url')"
 
 # Backups (DB pg_dump scheduler) ------------------------------------------
 set_env BACKUP_ENABLED         "$(bashio::config 'backup_enabled')"
@@ -193,6 +193,9 @@ set_env DATABASE_URL        "postgresql+asyncpg://${PG_USER}:${PG_PASS}@127.0.0.
 set_env BACKEND_URL         "http://127.0.0.1:${BACKEND_PORT}"
 set_env NEXT_PUBLIC_API_URL "http://127.0.0.1:${BACKEND_PORT}"
 set_env AUTH_TRUST_HEADER   "true"
+# Our nginx always fronts the API and appends the client to X-Forwarded-For;
+# with upstream's default of 0 every client would share one rate-limit bucket.
+set_env TRUSTED_PROXY_COUNT "1"
 set_env PYTHONPATH          "/app/backend"
 set_env PATH                "/opt/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
@@ -205,6 +208,7 @@ if [ -n "$EXTERNAL_URL" ]; then
   # Strip trailing slash
   EXTERNAL_URL="${EXTERNAL_URL%/}"
   set_env NEXTAUTH_URL  "$EXTERNAL_URL"
+  set_env APP_URL       "$EXTERNAL_URL"   # links in notifications/invites
   set_env CORS_ORIGINS  "[\"http://127.0.0.1:3000\",\"http://localhost:3000\",\"${EXTERNAL_URL}\"]"
   bashio::log.info "NEXTAUTH_URL = ${EXTERNAL_URL}"
   bashio::log.info "─── OIDC Redirect URI ─────────────────────────────"
@@ -271,16 +275,9 @@ if [ "$_pg_uid" = "0" ] && [ -d /data/postgres/data ]; then
   [ "$_pg_data_uid" != "0" ] && _pg_uid="$_pg_data_uid"
 fi
 if [ "$_pg_uid" != "0" ]; then
-  if bashio::config.true 'migrate_postgres_ownership'; then
-    bashio::log.info "Migrating PostgreSQL cluster from UID ${_pg_uid} to root …"
-    _pg_chown_r /data/postgres
-    bashio::log.info "Ownership migration complete."
-  else
-    bashio::log.error "PostgreSQL data directory is owned by UID ${_pg_uid}, not root."
-    bashio::log.error "This can happen after an upgrade, backup restore, or manual filesystem operation."
-    bashio::log.error "→ Set 'migrate_postgres_ownership: true' in add-on config and restart."
-    bashio::exit.nok
-  fi
+  bashio::log.info "Migrating PostgreSQL cluster from UID ${_pg_uid} to root …"
+  _pg_chown_r /data/postgres
+  bashio::log.info "Ownership migration complete."
 fi
 unset _pg_uid _pg_chown_r
 
