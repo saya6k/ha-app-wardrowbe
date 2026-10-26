@@ -1,8 +1,9 @@
 # BUILD_FROM is no longer injected by the Supervisor (>=2026.04.0) — default to
-# the multi-arch HA base manifest, pinned to an Alpine version tag (3.23 →
-# Node 24.14.1) instead of the moving :latest. Overridable with --build-arg.
-ARG BUILD_FROM=ghcr.io/home-assistant/base:3.23
-ARG WARDROWBE_VERSION=wardrowbe-v1.11.0
+# the multi-arch HA base manifest, pinned to an Alpine version tag (3.24 →
+# Node 24.22.1, Python 3.14) instead of the moving :latest. Overridable with
+# --build-arg.
+ARG BUILD_FROM=ghcr.io/home-assistant/base:3.24
+ARG WARDROWBE_VERSION=wardrowbe-v1.12.0
 
 # =========================================================================
 # Stage 0 — Clone source from GitHub release tag
