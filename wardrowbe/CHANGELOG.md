@@ -1,5 +1,16 @@
 # Changelog
 
+## 4.3.7
+
+- Update upstream Wardrowbe from v1.11.0 to v1.12.0. AI clothing
+  descriptions are now written in your profile language, tights are an
+  optional legwear type, and outfit suggestions handle dresses and other
+  full-body items better and always include a top.
+- Move the base image to Alpine 3.24 (Python 3.14). The bundled
+  PostgreSQL stays on 18, so existing data needs no migration.
+- Trust the updated CA bundle that drops the compromised eMudhra
+  intermediates.
+
 ## 4.3.6
 
 - Treat `ai_api_key`, `oidc_client_secret`, and `ntfy_token` as password
