@@ -3,7 +3,7 @@
 # Node 24.22.1, Python 3.14) instead of the moving :latest. Overridable with
 # --build-arg.
 ARG BUILD_FROM=ghcr.io/home-assistant/base:3.24
-ARG WARDROWBE_VERSION=wardrowbe-v1.12.0
+ARG WARDROWBE_VERSION=wardrowbe-v1.13.0
 
 # =========================================================================
 # Stage 0 — Clone source from GitHub release tag
