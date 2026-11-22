@@ -170,6 +170,14 @@ set_env AI_INTERNAL_ENABLED "$AI_INTERNAL_ENABLED"
 set_env AI_VISION_ENABLED    "$AI_VISION_ENABLED"
 set_env AI_TEXT_ENABLED      "$AI_TEXT_ENABLED"
 
+# AI UI switch (wardrowbe v1.14.0). Hidden option. Left unset, the web app's
+# AI pages and controls follow internal AI (hidden when it is off); true keeps
+# them for an external agent, false hides them even with internal AI on.
+# Only exported when set, so "unset" stays distinguishable from false.
+if bashio::config.has_value 'ai_ui_enabled'; then
+  set_env AI_UI_ENABLED "$(bashio::config 'ai_ui_enabled')"
+fi
+
 # Notifications (optional) ------------------------------------------------
 set_env NTFY_SERVER            "$(bashio::config 'ntfy_server')"
 set_env NTFY_TOKEN             "$(bashio::config 'ntfy_token')"
